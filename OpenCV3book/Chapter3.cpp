@@ -60,7 +60,21 @@ void secondEx()
 //b.Can you multiply them together directly ? If not, why not?
 //c.Try type - casting the vector object to a 3 x 1 matrix, using the cv::Mat<> template.
 //What happens now ?
-// OUTDATED!!! OpenCV 3. I am using OpenCV 4;
+void thirdEx()
+{
+  cv::Mat_<int> mat(3, 3);
+  mat << 1, 2, 3,
+         4, 5, 6,
+         7, 8, 9;
+
+  cv::Vec<int, 3> vec(1, 2, 3);
+
+  // Need a strict typcasting for templates.
+  // cout << "Multiplied = " << mat * vec << endl;
+
+  cv::Mat_<int> vecMat(vec, true);
+  cout << "Multiplied = " << mat * vecMat << endl;
+}
 
 int main(int argc, char* argv[]) 
 {
