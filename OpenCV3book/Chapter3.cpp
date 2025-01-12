@@ -71,14 +71,21 @@ void thirdEx()
 
   // Need a strict typcasting for templates.
   // cout << "Multiplied = " << mat * vec << endl;
+  // 
+  //still the porblem. Outdated book.
+  //cv::Mat_<int> vecMat(vec, true);
 
-  cv::Mat_<int> vecMat(vec, true);
-  cout << "Multiplied = " << mat * vecMat << endl;
+  //cv::Mat_<int> vecMat(3, 1);
+  //for (int i = 0; i < 3; ++i) 
+  //  vecMat(i, 0) = vec[i]; // Copy values from vec to vecMat
+
+  //cout << "Multiplied = " << mat * vecMat << endl;
 }
 
 int main(int argc, char* argv[]) 
 {
   firstEx();
   secondEx();
+  //thirdEx();
   return 0;
 }
