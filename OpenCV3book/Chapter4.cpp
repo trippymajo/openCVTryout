@@ -152,16 +152,41 @@ namespace secondEx
   //45 - degree rotated rectangle in the original image very efficiently ? Describe the
   //algorithm.
   
+  void calcIntegralRotated(const cv::Mat_<uchar>& orig, cv::Mat_<float>& integral)
+  {
+    for (int y = 0; y < orig.rows; ++y) 
+    {
+      for (int x = 0; x < orig.cols; ++x) 
+      {
+        //R(x,y) = I(x,y) + R(x-1, y-1) + R(x-1,y) + R(x, y-1) - R(x-1,y-2);
+        int pixelVal = orig(y, x);
+        int top = (y > 0) ? integral(y - 1, x) : 0.0f;
+        int left = (x > 0) ? integral(y, x - 1) : 0.0f;
+        int topLeft = (y > 0 && x > 0) ?integral(y - 1, x - 1) : 0.0f;
+        int topLeftDiagonal = (y > 1 && x > 0) ? integral(y - 2, x - 1) : 0.0f;
+
+        integral(y, x) = pixelVal + top + left + topLeft - topLeftDiagonal;
+      }
+    }
+  }
+
   float calcSumInputRect(const cv::Mat_<float>& integral, const cv::Rect& rect)
   {
     float retVal = 0.0f;
     // Check if Rect lies in original image (original same size as integral so check in integral)
-    if (rect.x + rect.width <= integral.rows && rect.y + rect.height <= integral.cols)
-    {
-      retVal += integral(rect.x, rect.y);
-      retVal += integral(rect.x + rect.width, rect.y + rect.height);
-      retVal -= integral(rect.x, rect.y + rect.height);
-      retVal -= integral(rect.x + rect.width, rect.y);
+    // Sumation within rectangle = IImage(Bottom Right) + IImage(Top Left) - IImage(Bottom Left) - IImage(Top Right)
+    if (rect.x >= 0 && rect.y >= 0 && rect.x + rect.width <= integral.cols && rect.y + rect.height <= integral.rows)
+    { // Row = y, Column = x. Here inclusive indexes, so we should do -1.
+      retVal += integral(rect.y + rect.height - 1, rect.x + rect.width - 1); // Bottom Right
+
+      if (rect.y > 0 && rect.x > 0)
+        retVal += integral(rect.y - 1, rect.x - 1); // Top Left
+
+      if (rect.x > 0)
+        retVal -= integral(rect.y + rect.height - 1, rect.x - 1); // Bottom Left
+
+      if (rect.y > 0)
+        retVal -= integral(rect.y - 1, rect.x + rect.width - 1); // Top Right
     }
 
     return retVal;
@@ -174,16 +199,16 @@ namespace secondEx
   void calcIntegralEffective(const cv::Mat_<uchar>& orig, cv::Mat_<float>& integral)
   {
     // I(x,y) = i(x,y) + I(x,y-1) + I(x-1,y) - I(x-1, y-1)
-    for (int i = 0; i < orig.rows; ++i)
+    for (int y = 0; y < orig.rows; ++y)
     {
-      for (int z = 0; z < orig.cols; ++z)
+      for (int x = 0; x < orig.cols; ++x)
       {
-        float pixelVal = static_cast<float>(orig(i, z));
-        float left = (z > 0) ? integral(i, z - 1) : 0.0f;
-        float top = (i > 0) ? integral(i - 1, z) : 0.0f;
-        float topLeft = (i > 0 && z > 0) ? integral(i - 1, z - 1) : 0.0f;
+        float pixelVal = static_cast<float>(orig(y, x));
+        float left = (x > 0) ? integral(y, x - 1) : 0.0f;
+        float top = (y > 0) ? integral(y - 1, x) : 0.0f;
+        float topLeft = (y > 0 && x > 0) ? integral(y - 1, x - 1) : 0.0f;
 
-        integral(i, z) = pixelVal + top + left - topLeft;
+        integral(y, x) = pixelVal + top + left - topLeft;
       }
     }
   }
@@ -239,13 +264,18 @@ namespace secondEx
     cout << "calculated sum of the Rect:" << endl;
     cout << calcSumInputRect(integralEffective, sampleRect) << endl;
 
-    // TODO e.
+    // e. Calculated Rotated integral image
+    // W.I.P TODO Rotated area sum calculation, also feed the rotated rectangle.
+    cv::Mat_<float>integralRotated = cv::Mat_<float>::zeros(100, 200);
+    calcIntegralRotated(orig, integralRotated);
+    cout << "Roatated integral image:" << endl;
+    cout << integralEffective << endl;
   }
 }
 
 int main(int argc, char* argv[]) 
 {
-  firstEx::firstEx();
+  //firstEx::firstEx();
   secondEx::secondEx();
   return 0;
 }
